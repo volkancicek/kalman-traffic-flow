@@ -1,6 +1,6 @@
-# EKF-traffic-flow
+# Kalman-traffic-flow
 
-Extended Kalman Filter Model for traffic flow prediction
+Kalman Filter Model for traffic flow prediction
 
 ## Requirements
 
