@@ -13,7 +13,7 @@
     },
     "base_path": "data/",
     "labels_path": "..\\..\\thesis\\data\\Verona_Data\\MeasuremetStations30050.rpt",
-    "feature_columns": [
+    "measures": [
       "volume_per_hour"],
     "target_column": "vehicle_count",
     "target_range": 1,
