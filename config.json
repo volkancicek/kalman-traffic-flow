@@ -5,12 +5,13 @@
     },
     "approach_1": {
       "feature_csv": "..\\..\\thesis\\data\\fcd\\ITA\\Veneto\\Verona\\Verona\\_approach_1.csv",
-      "data_file_name": "../data/approach_1_data.csv",
+      "data_file_name": "approach_1_data.csv",
       "start_timestamp": 1576796429000
     },
     "approach_2": {
       "feature_csv": "#########"
     },
+    "base_path": "data/",
     "labels_path": "..\\..\\thesis\\data\\Verona_Data\\MeasuremetStations30050.rpt",
     "feature_columns": [
       "volume_per_hour"],
