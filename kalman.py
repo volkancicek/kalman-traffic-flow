@@ -5,18 +5,18 @@ import matplotlib.pyplot as plt
 class Kalman:
     plt.rcParams['figure.figsize'] = (10, 8)
 
-    def __init__(self, measures, target, dates, n_iter):
-        self.iter = n_iter
-        self.measures = measures
-        self.target = target
-        self.dates = dates
-        sz = (n_iter,)  # size of array
+    def __init__(self, data, iter):
+        self.iter = iter
+        self.data = data
+        self.measures, self.target, self.dates = self.data.get_test_data()
+        sz = (self.iter,)  # size of array
         # allocate space for arrays
         self.x_posterior = np.zeros(sz)  # a posteri estimate of x
-        self.P = np.zeros(sz)  # a posteri error estimate
+        self.P_posterior = np.zeros(sz)  # a posteri error covariance
         self.x_prior = np.zeros(sz)  # a priori estimate of x
-        self.Pminus = np.zeros(sz)  # a priori error estimate
+        self.P_prior = np.zeros(sz)  # a priori error covariance
         self.K = np.zeros(sz)  # gain or blending factor
+        self.abs_errors = np.zeros(sz)
         self.squared_errors = np.zeros(sz)
 
         self.Q = 0.1 ** 2  # process variance
@@ -24,27 +24,33 @@ class Kalman:
 
         # intial values
         self.x_posterior[0] = 0.0
-        self.P[0] = 1.0
+        self.P_posterior[0] = 1.0
 
     def run_kalman(self):
         for k in range(1, self.iter):
             # time update
             self.x_prior[k] = self.x_posterior[k - 1]
-            self.Pminus[k] = self.P[k - 1] + self.Q
+            self.P_prior[k] = self.P_posterior[k - 1] + self.Q
 
             # measurement update
-            self.K[k] = self.Pminus[k] / (self.Pminus[k] + self.R)
+            self.K[k] = self.P_prior[k] / (self.P_prior[k] + self.R)
             self.x_posterior[k] = self.x_prior[k] + self.K[k] * (self.measures[k] - self.x_prior[k])
-            self.P[k] = (1 - self.K[k]) * self.Pminus[k]
+            self.P_posterior[k] = (1 - self.K[k]) * self.P_prior[k]
             self.squared_errors[k] = (self.x_posterior[k] - self.target[k]) ** 2
+            self.abs_errors[k] = np.abs(self.x_posterior[k] - self.target[k])
 
-    def plot_results(self):
+    def plot_results(self, normalized):
         plt.figure()
+        if normalized:
+            self.measures = self.data.denormalize_measures(self.measures)
+            self.target = self.data.denormalize_target(self.target)
+            self.x_posterior = self.data.denormalize_target(self.x_posterior)
+
         plt.plot(self.measures, 'k+', label='noisy measurements')
-        plt.plot(self.x_posterior, 'b-', label='a posteri estimate')
+        plt.plot(self.x_posterior, 'b-', label='prediction')
         plt.plot(self.target, color='g', label='true value')
         plt.legend()
-        plt.title('Prediction vs. iteration step', fontweight='bold')
+        plt.title('Prediction vs. iteration', fontweight='bold')
         plt.xlabel('dates')
 
         x_label_count = int(len(self.dates) / 70)
@@ -57,7 +63,7 @@ class Kalman:
 
         plt.figure()
         valid_iter = range(1, self.iter)  # Pminus not valid at step 0
-        plt.plot(valid_iter, self.Pminus[valid_iter], label='a priori error estimate')
+        plt.plot(valid_iter, self.P_prior[valid_iter], label='a priori error estimate')
         plt.title('Estimated $\it{\mathbf{a \ priori}}$ error vs. iteration step', fontweight='bold')
         plt.xlabel('Iteration')
         plt.ylabel('$(VolPerHour)^2$')
@@ -66,3 +72,5 @@ class Kalman:
 
         print("\n mse:")
         print(self.squared_errors.sum() / self.iter)
+        print("\n mae:")
+        print(self.abs_errors.sum() / self.iter)

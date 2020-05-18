@@ -27,5 +27,8 @@ class ProcessData:
         self.measures = (self.measures[:] - self.measures_mean) / self.measures_std
         self.target = (self.target[:] - self.target_mean) / self.target_std
 
-    def denormalize_target(self, y):
-        return (y * self.target_std) + self.target_mean
+    def denormalize_target(self, t):
+        return (t * self.target_std) + self.target_mean
+
+    def denormalize_measures(self, m):
+        return (m * self.measures_std) + self.measures_mean
