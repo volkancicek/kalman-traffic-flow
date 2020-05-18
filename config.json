@@ -16,6 +16,9 @@
     "measures": [
       "volume_per_hour"],
     "target_column": "vehicle_count",
+    "history_size": 288,
+    "step": 1,
+    "split": 0.9,
     "target_range": 1,
     "normalise": true
   }
