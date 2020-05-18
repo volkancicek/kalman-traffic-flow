@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime as dt
+import os
 
 
 class Kalman:
@@ -26,7 +28,7 @@ class Kalman:
         self.x_posterior[0] = 0.0
         self.P_posterior[0] = 1.0
 
-    def run_kalman(self):
+    def run_kalman(self, result_dir):
         for k in range(1, self.iter):
             # time update
             self.x_prior[k] = self.x_posterior[k - 1]
@@ -38,6 +40,19 @@ class Kalman:
             self.P_posterior[k] = (1 - self.K[k]) * self.P_prior[k]
             self.squared_errors[k] = (self.x_posterior[k] - self.target[k]) ** 2
             self.abs_errors[k] = np.abs(self.x_posterior[k] - self.target[k])
+
+        mse = self.squared_errors.sum() / self.iter
+        mae = self.abs_errors.sum() / self.iter
+
+        result_path = os.path.join(result_dir, '%s-result.txt' %
+                                   (dt.datetime.now().strftime('%d%m%Y-%H%M%S')))
+        print("\n mse:")
+        print(mse)
+        print("\n mae:")
+        print(mae)
+        file = open(result_path, "w")
+        file.write("mse: " + str(mse) + ", mae: " + str(mae) + ", Q: " + str(self.Q) + ", R: " + str(self.R))
+        file.close()
 
     def plot_results(self, normalized):
         plt.figure()
@@ -70,7 +85,4 @@ class Kalman:
         plt.setp(plt.gca(), 'ylim', [0, .01])
         plt.show()
 
-        print("\n mse:")
-        print(self.squared_errors.sum() / self.iter)
-        print("\n mae:")
-        print(self.abs_errors.sum() / self.iter)
+
