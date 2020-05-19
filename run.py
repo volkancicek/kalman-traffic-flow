@@ -45,7 +45,7 @@ def main():
 
 
 def run_unscented_kalman_filter(measures, target, dates, steps, q, r, results_dir):
-    uk = UnscentedKalman(measures, target, dates, steps, float(q), results_dir)
+    uk = UnscentedKalman(measures, target, dates, steps, results_dir)
     mse, mae = uk.run_unscented_kalman()
     save_results(mse, mae, uk.result_path, str(q), str(r))
     return uk

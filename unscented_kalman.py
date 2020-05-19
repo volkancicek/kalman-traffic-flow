@@ -4,47 +4,76 @@ from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import UnscentedKalmanFilter
 import numpy as np
 import matplotlib.pyplot as plt
-from filterpy.kalman import JulierSigmaPoints
+from filterpy.kalman import JulierSigmaPoints, MerweScaledSigmaPoints
 
 
 class UnscentedKalman:
 
-    def __init__(self, measures, target, dates, steps, q, result_dir):
+    def __init__(self, measures, target, dates, steps, result_dir):
         time = dt.datetime.now()
         self.result_path = os.path.join(result_dir, '%s-ukf-result.txt' %
                                         (time.strftime('%d%m%Y-%H%M%S')))
         self.result_fig_path = os.path.join(result_dir, '%s-ukf-result.png' %
                                             (time.strftime('%d%m%Y-%H%M%S')))
-        self.sigmas = JulierSigmaPoints(n=1, kappa=1)
+        # self.sigmas = JulierSigmaPoints(n=1, kappa=1)
+        self.sigmas = MerweScaledSigmaPoints(1, alpha=.1, beta=2., kappa=1.)
+
         self.ukf = UnscentedKalmanFilter(dim_x=1, dim_z=1, dt=1., hx=self.hx, fx=self.fx, points=self.sigmas)
-        self.ukf.P *= 10
-        self.ukf.R *= .2
-        self.ukf.Q = q  # process variance     # Q_discrete_white_noise(2, dt=1., var=0.03)
+
+        self.ukf.P = 10
+        self.ukf.R = .1
+        self.ukf.Q = .00001  # process variance     # Q_discrete_white_noise(2, dt=1., var=0.03)
         # self.ukf.R *= R  # estimate of measurement variance
+
         self.steps = steps
         self.measures, self.target, self.dates = measures, target, dates
         sz = (self.steps,)  # size of array
         self.x = np.zeros(sz)  # a posteri estimate of x
         self.abs_errors = np.zeros(sz)
         self.squared_errors = np.zeros(sz)
+        self.time_point = 0
+        self.trend_const = 1
 
     def fx(self, x, dt):
         x_out = np.empty_like(x)
-        x_out[0] = x[0]  # + np.cos(dt * 3.14)  # np.log(1 ** x[0]) * dt + x[0]
+        x_out[0] = (x[0] + (self.get_trend(self.time_point) * self.trend_const)) / 100
+        self.time_point += 1
         return x_out
 
     def hx(self, x):
-        return x[:1]  # return [x]
+        return (x + self.get_trend(self.time_point * self.trend_const)) / 1.3
+
+    """ peak times: [07:30- 08:30], [16:30-17:30] """
+    """ peak ticks = [90, 102], [198, 210] """
+    """ ticks range 0-287"""
+    """ midnight tick => |0-90| = 90"""
+
+    def get_trend(self, point):
+        array = np.asarray([90, 102, 198, 210])
+        if 103 > point > 89 or 197 < point < 211:
+            dist_angle = 0
+        else:
+            dist = (np.abs(array - point)).min()
+            """ transform points of day (288 -> 360) to degrees"""
+            dist_angle = dist * 1.25
+
+        return np.cos(dist_angle) ** 2
 
     def run_unscented_kalman(self):
+        diff = np.zeros(288, )
         for k in range(self.steps):
             self.ukf.predict()
             self.ukf.update(self.measures[k])
             self.x[k] = self.ukf.x[0]
             self.squared_errors[k] = (self.ukf.x[0] - self.target[k]) ** 2
             self.abs_errors[k] = np.abs(self.ukf.x[0] - self.target[k])
+            diff[k] = self.ukf.x[0] / self.target[k]
+
         mse = self.squared_errors.sum() / self.steps
         mae = self.abs_errors.sum() / self.steps
+        avg_diff = diff.sum() / self.steps
+        print("avg diff: \n")
+        print(str(avg_diff))
 
         return mse, mae
 
