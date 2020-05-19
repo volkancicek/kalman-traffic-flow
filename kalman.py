@@ -5,9 +5,8 @@ import os
 
 
 class Kalman:
-    plt.rcParams['figure.figsize'] = (10, 8)
 
-    def __init__(self, data, iter):
+    def __init__(self, data, iter, Q, R):
         self.iter = iter
         self.data = data
         self.measures, self.target, self.dates = self.data.get_test_data()
@@ -21,14 +20,14 @@ class Kalman:
         self.abs_errors = np.zeros(sz)
         self.squared_errors = np.zeros(sz)
 
-        self.Q = 0.1 ** 2  # process variance
-        self.R = 0.1 ** 1  # estimate of measurement variance, change to see effect
+        self.Q = Q  # process variance
+        self.R = R  # estimate of measurement variance
 
-        # intial values
+        # initial values
         self.x_posterior[0] = 0.0
         self.P_posterior[0] = 1.0
 
-    def run_kalman(self, result_dir):
+    def run_kalman_filter(self, result_dir):
         for k in range(1, self.iter):
             # time update
             self.x_prior[k] = self.x_posterior[k - 1]
@@ -44,17 +43,12 @@ class Kalman:
         mse = self.squared_errors.sum() / self.iter
         mae = self.abs_errors.sum() / self.iter
 
-        result_path = os.path.join(result_dir, '%s-result.txt' %
+        result_path = os.path.join(result_dir, '%s-kalman-result.txt' %
                                    (dt.datetime.now().strftime('%d%m%Y-%H%M%S')))
-        print("\n mse:")
-        print(mse)
-        print("\n mae:")
-        print(mae)
-        file = open(result_path, "w")
-        file.write("mse: " + str(mse) + ", mae: " + str(mae) + ", Q: " + str(self.Q) + ", R: " + str(self.R))
-        file.close()
+        return mse, mae, result_path
 
     def plot_results(self, normalized):
+        plt.rcParams['figure.figsize'] = (10, 8)
         plt.figure()
         if normalized:
             self.measures = self.data.denormalize_measures(self.measures)

@@ -22,5 +22,7 @@
     "target_range": 1,
     "normalise": true
   },
-  "results": "results"
+  "results": "results",
+  "Q": "1.0000000000000005e-09",
+  "R": "0.010000000000000002"
 }
