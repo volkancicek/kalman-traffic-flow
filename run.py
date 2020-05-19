@@ -3,6 +3,8 @@ import os
 
 from data.process_data import ProcessData
 from kalman import Kalman
+from plot_results import plot_results
+from unscented_kalman import UnscentedKalman
 
 
 def main():
@@ -14,21 +16,46 @@ def main():
     normalize = configs['data']['normalise']
     if normalize:
         data.normalize_data()
+
+    measures, target, dates = data.get_test_data()
+    """ run filters for the  Selected day (11.03.2020) """
+    measures = measures[425:713]
+    target = target[426:714]
+    dates = dates[426:714]
+    """  """
+
     q = configs['Q']
     r = configs['R']
     steps = 288
-    run_kalman_filter(data, steps, q, r, normalize, results_dir)
+    kf = run_kalman_filter(measures, target, dates, steps, q, r, results_dir)
+    kf_predictions = kf.x_posterior
+    ukf = run_unscented_kalman_filter(measures, target, dates, steps, q, r, results_dir)
+    ukf_predictions = ukf.x
+
+    """ if measures & target are normalized when applying filters, they should be denormalized before plotting! """
+    if normalize:
+        measures = data.denormalize_measures(measures)
+        target = data.denormalize_target(target)
+        kf_predictions = data.denormalize_target(kf_predictions)
+        ukf_predictions = data.denormalize_target(ukf_predictions)
+    """ """
+
+    plot_results(measures, target, kf_predictions, dates, "Kalman Filter Results", kf.result_fig_path)
+    plot_results(measures, target, ukf_predictions, dates, "Unscented Kalman Filter Results", ukf.result_fig_path)
 
 
-def run_kalman_filter(data, steps, q, r, normalized, results_dir):
-    k = Kalman(data, steps, float(q), float(r))
-    # run filter for 11.03.2020
-    k.measures = k.measures[425:713]
-    k.target = k.target[426:714]
-    k.dates = k.dates[426:714]
-    mse, mae, result_path, = k.run_kalman_filter(results_dir)
-    k.plot_results(normalized)
-    save_results(mse, mae, result_path, str(q), str(r))
+def run_unscented_kalman_filter(measures, target, dates, steps, q, r, results_dir):
+    uk = UnscentedKalman(measures, target, dates, steps, float(q), results_dir)
+    mse, mae = uk.run_unscented_kalman()
+    save_results(mse, mae, uk.result_path, str(q), str(r))
+    return uk
+
+
+def run_kalman_filter(measures, target, dates, steps, q, r, results_dir):
+    k = Kalman(measures, target, dates, steps, float(q), float(r), results_dir)
+    mse, mae = k.run_kalman_filter()
+    save_results(mse, mae, k.result_path, str(q), str(r))
+    return k
 
 
 def save_results(mse, mae, result_path, q, r):
