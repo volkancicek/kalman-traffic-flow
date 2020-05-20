@@ -3,7 +3,7 @@ import os
 
 from data.process_data import ProcessData
 from kalman import Kalman
-from plot_results import plot_results
+from helper import plot_results
 from unscented_kalman import UnscentedKalman
 
 
@@ -65,10 +65,10 @@ def save_results(mse, mae, result_path, q, r):
     file.write("RESULTS - mse: " + str(mse) + ", mae: " + str(mae) + ",\n"
                                                                      "PARAMETERS - Q: " + str(q) + ", R: " + str(r))
     file.close()
-    print("\n filter results are saved to : \n" + str(result_path))
-    print("\n mse:")
+    print("\n filter results are saved to : " + str(result_path))
+    print(" mse:")
     print(mse)
-    print("\n mae:")
+    print(" mae:")
     print(mae)
 
 
