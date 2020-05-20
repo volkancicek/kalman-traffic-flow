@@ -14,7 +14,8 @@
     "base_path": "data/",
     "labels_path": "..\\..\\thesis\\data\\Verona_Data\\MeasuremetStations30050.rpt",
     "measures": [
-      "volume_per_hour"],
+      "volume_per_hour"
+    ],
     "target_column": "vehicle_count",
     "history_size": 288,
     "step": 1,
@@ -23,6 +24,17 @@
     "normalise": true
   },
   "results": "results",
-  "Q": "1.0000000000000005e-09",
-  "R": "0.010000000000000002"
+  "kalman": {
+    "Q": "1.0000000000000005e-10",
+    "R": "0.010000000000000002"
+  },
+  "unscented": {
+    "Q": "1.0000000000000005e-10",
+    "R": "0.000010000000000000002"
+  },
+  "extended": {
+    "results": "results",
+    "Q": "1.0000000000000005e-10",
+    "R": "0.010000000000000002"
+  }
 }

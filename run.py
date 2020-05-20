@@ -24,12 +24,14 @@ def main():
     dates = dates[426:714]
     """  """
 
-    q = configs['Q']
-    r = configs['R']
+    kf_q = configs['kalman']['Q']
+    kf_r = configs['kalman']['R']
+    ukf_q = configs['unscented']['Q']
+    ukf_r = configs['unscented']['R']
     steps = 288
-    kf = run_kalman_filter(measures, target, dates, steps, q, r, results_dir)
+    kf = run_kalman_filter(measures, target, dates, steps, kf_q, kf_r, results_dir)
     kf_predictions = kf.x_posterior
-    ukf = run_unscented_kalman_filter(measures, target, dates, steps, q, r, results_dir)
+    ukf = run_unscented_kalman_filter(measures, target, dates, steps, ukf_q, ukf_r, results_dir)
     ukf_predictions = ukf.x
 
     """ if measures & target are normalized when applying filters, they should be denormalized before plotting! """
@@ -45,7 +47,7 @@ def main():
 
 
 def run_unscented_kalman_filter(measures, target, dates, steps, q, r, results_dir):
-    uk = UnscentedKalman(measures, target, dates, steps, results_dir)
+    uk = UnscentedKalman(measures, target, dates, steps, float(q), float(r), results_dir)
     mse, mae = uk.run_unscented_kalman()
     save_results(mse, mae, uk.result_path, str(q), str(r))
     return uk
