@@ -29,15 +29,11 @@ def plot_results(measures, target, estimates, dates, title, path):
 
 
 def get_trend(point):
-    trend_const = 1.85
-    array = np.asarray([90, 102, 98, 210])
+    array = np.asarray([89, 101, 197, 209])
     dist = np.min([np.abs(array - point), np.abs(array - (point + 288))])
-    if 88 < point < 104 or 96 < point < 212:
-        trend_val = get_trend(point - 1) * 1.1
-    else:
-        trend_val = np.log(dist + 2)
+    if 87 < point < 103 or 195 < point < 211:
+        dist = 2
 
-    if 228 > point > 60:
-        trend_val /= 2
+    trend_val = np.log(dist)
 
-    return trend_const / trend_val
+    return 2 / trend_val

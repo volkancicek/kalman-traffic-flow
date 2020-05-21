@@ -50,6 +50,12 @@ def run_unscented_kalman_filter(measures, target, dates, steps, q, r, results_di
     uk = UnscentedKalman(measures, target, dates, steps, float(q), float(r), results_dir)
     mse, mae = uk.run_unscented_kalman()
     save_results(mse, mae, uk.result_path, str(q), str(r))
+    print("max-min filter:")
+    print(str(uk.x.max()))
+    print(str(uk.x.min()))
+    print("max-min target:")
+    print(str(uk.target.max()))
+    print(str(uk.target.min()))
     return uk
 
 

@@ -16,7 +16,7 @@ class UnscentedKalman:
         self.result_fig_path = os.path.join(result_dir, '%s-ukf-result.png' %
                                             (time.strftime('%d%m%Y-%H%M%S')))
         # self.sigmas = JulierSigmaPoints(n=1, kappa=1)
-        self.sigmas = MerweScaledSigmaPoints(1, alpha=.1, beta=2., kappa=1.)
+        self.sigmas = MerweScaledSigmaPoints(1, alpha=1., beta=2., kappa=2.)
         self.ukf = UnscentedKalmanFilter(dim_x=1, dim_z=1, dt=1., hx=self.hx, fx=self.fx, points=self.sigmas)
         self.ukf.P = 1
         self.ukf.R = r
@@ -48,11 +48,5 @@ class UnscentedKalman:
 
         mse = self.squared_errors.sum() / self.steps
         mae = self.abs_errors.sum() / self.steps
-        print("max-min filter:")
-        print(str(self.x.max()))
-        print(str(self.x.min()))
-        print("max-min target:")
-        print(str(self.target.max()))
-        print(str(self.target.min()))
 
         return mse, mae
