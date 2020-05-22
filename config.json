@@ -5,7 +5,7 @@
     },
     "approach_1": {
       "feature_csv": "..\\..\\thesis\\data\\fcd\\ITA\\Veneto\\Verona\\Verona\\_approach_1.csv",
-      "data_file_name": "approach_1_data.csv",
+      "data_file_name": "approach_1_split.csv",
       "start_timestamp": 1576796429000
     },
     "approach_2": {

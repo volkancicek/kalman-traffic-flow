@@ -4,7 +4,7 @@ import os
 
 
 class ProcessData:
-    """A class for loading and transforming data for RNN models"""
+    """A class for loading and transforming data for Kalman Filters"""
 
     def __init__(self, configs):
         self.configs = configs
