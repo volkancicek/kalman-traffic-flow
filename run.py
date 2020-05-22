@@ -1,5 +1,6 @@
 import json
 import os
+import numpy as np
 
 from data.process_data import ProcessData
 from kalman import Kalman
@@ -22,7 +23,19 @@ def main():
     measures = measures[425:713]
     target = target[426:714]
     dates = dates[426:714]
-    """  """
+
+    target_abs_err, target_sq_err = np.zeros(len(target)), np.zeros(len(target))
+    for i in range(1, len(target) - 1):
+        target_abs_err[i - 1] = np.abs(target[i] - target[i - 1])
+        target_sq_err[i - 1] = (target[i] - target[i - 1]) ** 2
+
+    print("\ntarget mean absolute error (MAE): ")
+    print(target_abs_err.sum() / len(target))
+    print("target mean squared error (MSE):")
+    print(target_sq_err.sum() / (len(target)))
+    print("\ntarget max-min values:")
+    print(str(target.max()))
+    print(str(target.min()))
 
     kf_q = configs['kalman']['Q']
     kf_r = configs['kalman']['R']
@@ -47,23 +60,27 @@ def main():
 
 
 def run_unscented_kalman_filter(measures, target, dates, steps, q, r, results_dir):
-    uk = UnscentedKalman(measures, target, dates, steps, float(q), float(r), results_dir)
-    mse, mae = uk.run_unscented_kalman()
-    save_results(mse, mae, uk.result_path, str(q), str(r))
-    print("max-min filter:")
-    print(str(uk.x.max()))
-    print(str(uk.x.min()))
-    print("max-min target:")
-    print(str(uk.target.max()))
-    print(str(uk.target.min()))
-    return uk
+    ukf = UnscentedKalman(measures, target, dates, steps, float(q), float(r), results_dir)
+    mse, mae = ukf.run_unscented_kalman()
+    print("\nUKF results:")
+    save_results(mse, mae, ukf.result_path, str(q), str(r))
+    print("UKF max-min values:")
+    print(str(ukf.x.max()))
+    print(str(ukf.x.min()))
+
+    return ukf
 
 
 def run_kalman_filter(measures, target, dates, steps, q, r, results_dir):
-    k = Kalman(measures, target, dates, steps, float(q), float(r), results_dir)
-    mse, mae = k.run_kalman_filter()
-    save_results(mse, mae, k.result_path, str(q), str(r))
-    return k
+    kf = Kalman(measures, target, dates, steps, float(q), float(r), results_dir)
+    mse, mae = kf.run_kalman_filter()
+    print("\nKF results:")
+    save_results(mse, mae, kf.result_path, str(q), str(r))
+    print("KF max-min values:")
+    print(str(kf.x_posterior.max()))
+    print(str(kf.x_posterior.min()))
+
+    return kf
 
 
 def save_results(mse, mae, result_path, q, r):
@@ -71,10 +88,10 @@ def save_results(mse, mae, result_path, q, r):
     file.write("RESULTS - mse: " + str(mse) + ", mae: " + str(mae) + ",\n"
                                                                      "PARAMETERS - Q: " + str(q) + ", R: " + str(r))
     file.close()
-    print("\n filter results are saved to : " + str(result_path))
-    print(" mse:")
+    print("filter results are saved to : " + str(result_path))
+    print("MSE:")
     print(mse)
-    print(" mae:")
+    print("MAE:")
     print(mae)
 
 
